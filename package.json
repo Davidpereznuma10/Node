@@ -8,9 +8,14 @@
     "start": "node index.js",
     "lint": "eslint"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "express",
+    "node",
+    "javaScript"
+  ],
+  "author": "Davi Pérez Numa",
   "license": "ISC",
+  
   "devDependencies": {
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^8.8.0",
