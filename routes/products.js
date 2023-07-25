@@ -5,38 +5,79 @@ const ProductsService = require('../services/products_service');
 const router = express.Router();
 const service = new ProductsService();
 
-router.get('/', (req, res) => {
-  const products = service.find();
+//Middleware para traer todas las productos
+router.get('/', async(req, res) => {
+try {
+  const products = await service.find();
   res.json(products);
+} catch (error) {
+  res.status(500).json({ error: 'Ocurrió un error en el servidor' });
+}
 });
 
-router.get('/filter', (req, res) => {
-  res.send('Yo soy un filter');
+//Middleware para traer a productos por id
+router.get('/:id_product', async(req, res) => {
+  const { id_product } = req.params;
+  try {
+    const product = await service.findOne(id_product);
+    if (product === null) {
+      return res.status(404).json({error:'producto no encontrado'})
+    }
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ error: 'Ocurrió un error en el servidor' });
+  }
 });
 
-router.get('/:id', (req, res) => {
-  const { id } = req.params;
-  const product = service.findOne(id);
-  res.json(product);
-});
+// Middleware para manejar el JSON vacío
+function checkEmptyJSON(req, res, next) {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(400).json({ error: 'El JSON enviado está vacío' });
+  }
+  next();
+}
 
-router.post('/', (req, res) => {
+// Middleware para crear un nuevo producto
+router.post('/',checkEmptyJSON, async(req, res) => {
   const body = req.body;
-  const newProduct = service.create(body);
-  res.status(201).json(newProduct);
+  try {
+    const newProduct = await service.create(body);
+    if (body === null) {
+      return res.status(404).json({error:'producto no encontrado'})
+    }
+    res.status(201).json(newProduct);
+  } catch (error) {
+    res.status(500).json({ error: 'Ocurrió un error en el servidor' });
+  }
 });
 
-router.patch('/:id', (req, res) => {
-  const { id } = req.params;
+//Middleware para actualizar a las productos
+router.patch('/:id_product', checkEmptyJSON, async(req, res) => {
+  const { id_product } = req.params;
   const body = req.body;
-  const product = service.update(id, body);
-  res.json(product);
+  try {
+    const product = await service.update(id_product, body);
+    if (product === null) {
+      return res.status(404).json({error:'producto no encontrado'})
+    }
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: 'Ocurrió un error en el servidor' });
+  }
 });
 
-router.delete('/:id', (req, res) => {
-  const { id } = req.params;
-  const rta = service.delete(id);
-  res.json(rta);
+//Middleware Para borrar a productos por id
+router.delete('/:id_product', async(req, res) => {
+  const { id_product } = req.params;
+  try {  const rta = await service.delete(id_product);
+
+    if (rta === null) {
+      return res.status(404).json({error:'producto no encontrado'})
+    }
+    res.json(rta);
+  } catch (error) {
+    res.status(500).json({ error: 'Ocurrió un error en el servidor' });
+  }
 });
 
 module.exports = router;
