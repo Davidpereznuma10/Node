@@ -1,23 +1,23 @@
 const { faker } = require('@faker-js/faker');
 
-class categoriesService{
-  constructor(){
-    this.categories=[];
+class categoriesService {
+  constructor() {
+    this.categories = [];
     this.generate();
   }
 
-  generate(){
+  generate() {
     const limit = 10;
     for (let i = 0; i < limit; i++) {
       this.categories.push({
         categoriesId: faker.datatype.uuid(),
         categorias: faker.color.rgb(),
-    })
-  }
+      });
+    }
   }
 
-  create(){
-    const { categoria }= data;
+  async create(data) {
+    const { categoria } = data;
     const category = {
       categoriesId: faker.datatype.uuid(),
       categoria,
@@ -26,35 +26,45 @@ class categoriesService{
     return category;
   }
 
-  find(){
+  async find() {
     return this.categories;
   }
 
-  finOne(categoriesId){
-    return this.categories.find((e)=> e.categoriesId=== categoriesId);
+  async findOne(id) {
+    return this.categories.find((e) => e.categoriesId === id);
   }
 
-  update(categoriesId, changes){
-    const index = this.categories.findIndex((e)=>e.categoriesId===categoriesId);
-    if (index===-1) {
-      throw new Error('Category not found');
+  async addProductsToCategory(id, products) {
+    const index = this.categories.findIndex((e) => e.categoriesId === id);
+    if (index === -1) {
+      throw new Error('Categoría no encontrada');
+    }
+    const categoria = this.categories[index];
+    categoria.products = products;
+    return categoria;
+  }
+
+  async update(id, changes) {
+    const index = this.categories.findIndex((e) => e.categoriesId === id);
+    if (index === -1) {
+      throw new Error('Categoría no encontrada');
     }
     const category = this.categories[index];
-    this.categories[index]={
+    this.categories[index] = {
       ...category,
       ...changes,
     };
     return this.categories[index];
   }
 
-  delete(categoriesId){
-    const index = this.categories.findIndex((e)=>e.categoriesId===categoriesId);
-    if(index===-1){
-      throw new Error('Product no found');
+  async deleteOne(categoriesId) {
+    const index = this.categories.findIndex((e) => e.categoriesId === categoriesId);
+    if (index === -1) {
+      throw new Error('Categoría no encontrada');
     }
-    this.categories.splice(index,1);
+    this.categories.splice(index, 1);
     return { categoriesId };
   }
 }
 
-module.exports= categoriesService;
+module.exports = categoriesService;
