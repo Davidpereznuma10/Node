@@ -1,4 +1,5 @@
 const { faker } = require("@faker-js/faker");
+const { use } = require("../routes/people");
 
 class userService{
 constructor(){
@@ -31,12 +32,20 @@ constructor(){
   }
 
   find(){
-    return this.users;
+    const user = this.users;
+    if (!user) {
+      throw new Error('El user no existe');
+    }
+    return user;
   }
 
   finOne(id){
-    return this.users.find((item)=> item.id === id)
-  }
+    const user = tthis.users.find((item)=> item.id === id);
+    if (!user) {
+      throw new Error('El user no existe');
+    }
+    return user;
+  };
 
   update(id, changes){
     const index = this.users.findIndex((item)=> item.id === id);
