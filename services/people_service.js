@@ -18,7 +18,8 @@ constructor(){
     }
   }
 
-  create(){
+
+  async create(){
     const { name, zodiaco, edad } =data;
     const people = {
       id: faker.datatype.uuid(),
@@ -30,16 +31,25 @@ constructor(){
     return people;
   }
 
-  find(){
-    return this.peoples
+  async find(){
+    const people = this.peoples
+    if (!people) {
+      throw new Error('La persona no existe');
+    }
+    return people;
   }
 
-  findOne(id){
-    return this.peoples.find((item)=> item.id === id);
+  async findOne(id){
+    const people = this.peoples.find((item)=> item.id === id);
+    if (!people) {
+      throw new Error('La persona no existe');
+    }
+    return people;
   }
-  update(id, changes){
+
+  async update(id, changes){
     const index = this.peoples.findIndex((item)=> item.id === id);
-    if (index===-1) {
+    if (index === -1) {
       throw new Error('La persona no existe');
     }
     const people = this.peoples[index];
@@ -50,7 +60,7 @@ constructor(){
     return this.peoples[index];
   }
 
-  delete(id) {
+  async delete(id){
     const index = this.peoples.findIndex((item) => item.id === id);
     if (index === -1) {
       throw new Error('Product not found');
