@@ -18,21 +18,29 @@ class categoriesService {
 
   async create(data) {
     const { categoria } = data;
-    const category = {
+    const newCategoria = {
       categoriesId: faker.datatype.uuid(),
-      categoria,
+      categoria, 
     };
-    this.categories.push(category);
-    return category;
+    this.categories.push(newCategoria);
+    return newCategoria;
   }
-
   async find() {
-    return this.categories;
+    const categoria = this.categories;
+    if (!categoria) {
+      throw new Error('Categoría no encontrada');
+    }
+    return categoria;
   }
 
   async findOne(id) {
-    return this.categories.find((e) => e.categoriesId === id);
+    const categoria = this.categories.find((e) => e.categoriesId === id);
+    if (!categoria) {
+      throw new Error('Categoría no encontrada');
+    }
+    return categoria;
   }
+
 
   async addProductsToCategory(id, products) {
     const index = this.categories.findIndex((e) => e.categoriesId === id);
@@ -57,7 +65,7 @@ class categoriesService {
     return this.categories[index];
   }
 
-  async deleteOne(categoriesId) {
+  async delete(categoriesId) {
     const index = this.categories.findIndex((e) => e.categoriesId === categoriesId);
     if (index === -1) {
       throw new Error('Categoría no encontrada');
