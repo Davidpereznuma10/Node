@@ -1,51 +1,74 @@
 const { faker } = require('@faker-js/faker');
+const Boom = require('@hapi/boom');
 
 class ProductsService {
 
   constructor(){
     this.products = [];
     this.generate();
-  }
+  };
 
-  generate(categoriesId) {
+  generate() {
     const limit = 100;
     for (let index = 0; index < limit; index++) {
       this.products.push({
-        id_product: faker.datatype.uuid(),
+        id: faker.string.uuid(),
         name: faker.commerce.productName(),
         price: parseInt(faker.commerce.price(), 10),
-        image: faker.image.imageUrl(),
-        categoriesId,
+        image: faker.image.url(),
+        isBlock: faker.datatype.boolean(),
       });
-    }
-  }
+    };
+  };
 
-  create(data) {
+  async create(data) {
     const { name, price, image } = data;
+    if (!name || !price || !image) {
+      throw Boom.badRequest('Faltan datos obligatorios para crear el producto');
+    };
     const product = {
-        id_product: faker.datatype.uuid(),
-        name,
-        price,
-        image,
+      id: faker.string.uuid(),
+      name,
+      price,
+      image,
+      isBlock: faker.datatype.boolean(),
     };
     this.products.push(product);
     return product;
-}
+  };
 
-  find() {
-    return this.products;
-  }
+  async find() {
+    const product = this.products;
+    if (!product) {
+      throw Boom.notFound("Product not found");
+    };
+    return product;
+  };
 
-  findOne(id) {
-    return this.products.find(item => item.id_product === id);
-  }
+  async findOne(id) {
+    const product = this.products.find(item => item.id === id);
+    if (!product) {
+      throw Boom.notFound('Product not found');
+    };
+    if (product.isBlock) {
+      throw Boom.conflict('Product is blocked');
+    };
+    return product;
+  };
 
-  update(id, changes) {
-    const index = this.products.findIndex(item => item.id_product === id);
+  async update(id, changes) {
+    const index = this.products.findIndex(item => item.id === id);
     if (index === -1) {
-      throw new Error('product not found');
-    }
+      throw Boom.notFound("Product not found");
+    };
     const product = this.products[index];
+    if (product.isBlock) {
+      throw Boom.conflict('Product is blocked');
+    };
+    const { name, price, image } = changes;
+    if (!name && !price && !image) {
+      throw Boom.badRequest('No se proporcionaron datos para actualizar el prodcuto');
+    }
     this.products[index] = {
       ...product,
       ...changes
@@ -53,15 +76,19 @@ class ProductsService {
     return this.products[index];
   }
 
-  delete(id) {
-    const index = this.products.findIndex(item => item.id_product === id);
+  async delete(id) {
+    const index = this.products.findIndex(item => item.id === id);
     if (index === -1) {
-      throw new Error('product not found');
-    }
+      throw Boom.notFound("Product not found");
+    };
+    const product = this.products[index];
+    if (product.isBlock) {
+      throw Boom.conflict('Product is blocked');
+    };
     this.products.splice(index, 1);
     return { id };
-  }
-
-}
+  };
+};
 
 module.exports = ProductsService;
+
