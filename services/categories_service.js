@@ -1,78 +1,103 @@
 const { faker } = require('@faker-js/faker');
+const Boom = require('@hapi/boom');
 
 class categoriesService {
   constructor() {
     this.categories = [];
     this.generate();
-  }
+  };
 
   generate() {
     const limit = 10;
     for (let i = 0; i < limit; i++) {
       this.categories.push({
-        categoriesId: faker.datatype.uuid(),
+        id: faker.string.uuid(),
         categorias: faker.color.rgb(),
+        isBlock: faker.datatype.boolean(),
       });
-    }
-  }
+    };
+  };
 
   async create(data) {
-    const { categoria } = data;
-    const newCategoria = {
-      categoriesId: faker.datatype.uuid(),
-      categoria, 
+    const { categorias } = data;
+    if (!categorias) {
+      throw Boom.badRequest('Faltan datos obligatorios para crear la categoría');
     };
-    this.categories.push(newCategoria);
-    return newCategoria;
-  }
+    const categoria = {
+      id: faker.datatype.uuid(),
+      categorias,
+      isBlock: faker.datatype.boolean(),
+    };
+    this.categories.push(categoria);
+    return categoria;
+  };
+
+
   async find() {
     const categoria = this.categories;
     if (!categoria) {
-      throw new Error('Categoría no encontrada');
-    }
+      throw Boom.notFound('Categoría no encontrada');
+    };
     return categoria;
-  }
+  };
 
   async findOne(id) {
-    const categoria = this.categories.find((e) => e.categoriesId === id);
+    const categoria = this.categories.find((e) => e.id === id);
     if (!categoria) {
       throw new Error('Categoría no encontrada');
-    }
+    };
+    if(categoria.isBlock){
+      throw Boom.conflict('Category is blocked');
+    };
     return categoria;
-  }
+  };
 
 
   async addProductsToCategory(id, products) {
-    const index = this.categories.findIndex((e) => e.categoriesId === id);
+    const index = this.categories.findIndex((e) => e.id === id);
     if (index === -1) {
-      throw new Error('Categoría no encontrada');
-    }
+      throw Boom.notFound('category not found');
+    };
     const categoria = this.categories[index];
+    if (categoria.isBlock) {
+      throw Boom.conflict('Category is blocked');
+    };
     categoria.products = products;
     return categoria;
-  }
+  };
 
   async update(id, changes) {
-    const index = this.categories.findIndex((e) => e.categoriesId === id);
+    const index = this.categories.findIndex((e) => e.id === id);
     if (index === -1) {
       throw new Error('Categoría no encontrada');
+    };
+    const categoria = this.categories[index];
+    if (categoria.isBlock) {
+      throw Boom.conflict('Category is blocked');
+    };
+    const { categorias } = changes;
+    if (!categorias) {
+      throw Boom.badRequest('No se proporcionaron datos para actualizar la categoría');
     }
-    const category = this.categories[index];
     this.categories[index] = {
-      ...category,
+      ...categoria,
       ...changes,
     };
     return this.categories[index];
-  }
+  };
 
-  async delete(categoriesId) {
-    const index = this.categories.findIndex((e) => e.categoriesId === categoriesId);
+  async delete(id) {
+    const index = this.categories.findIndex((e) => e.id === id);
     if (index === -1) {
       throw new Error('Categoría no encontrada');
-    }
+    };
+    const categoria = this.categories[index];
+    if (categoria.isBlock) {
+      throw Boom.conflict('Category is blocked');
+    };
     this.categories.splice(index, 1);
-    return { categoriesId };
-  }
-}
+    return { id };
+  };
+};
 
 module.exports = categoriesService;
