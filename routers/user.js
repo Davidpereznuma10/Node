@@ -1,6 +1,7 @@
 const express = require("express");
 const userService = require("../services/user_service");
-const { checkEmptyJSON } = require('../middlewares/error.handler')
+const validatorHandler = require('../middlewares/validator.handler');
+const { createUserDto, updateUserDto, getUserDto } = require('../model/user_Dto');
 const services = new userService()
 const router = express.Router();
 
@@ -15,7 +16,9 @@ router.get('/', async (req, res, next)=>{
 });
 
 //Ruta para trae a usuarios por su id
-router.get('/:id', async (req, res, next)=>{
+router.get('/:id',
+  validatorHandler(getUserDto, 'params'),
+  async (req, res, next)=>{
   const { id } = req.params;
   try {
     const user = await services.finOne(id);
@@ -26,7 +29,9 @@ router.get('/:id', async (req, res, next)=>{
 });
 
 //Ruta para crear un nuevo usuario
-router.post('/', checkEmptyJSON, async (req, res, next) => {
+router.post('/',
+  validatorHandler(createUserDto, 'body'),
+  async (req, res, next) => {
   const body = req.body;
   try {
     const newUser = await services.create(body);
@@ -37,7 +42,10 @@ router.post('/', checkEmptyJSON, async (req, res, next) => {
 });
 
 //Ruta para actualizar un usuario
-router.patch('/:id', checkEmptyJSON, async (req, res, next)=>{
+router.patch('/:id',
+  validatorHandler(getUserDto, 'params'),
+  validatorHandler(updateUserDto, 'body'),
+  async (req, res, next)=>{
   const { id } = req.params;
   const body = req.body;
   try {
@@ -49,7 +57,9 @@ router.patch('/:id', checkEmptyJSON, async (req, res, next)=>{
 });
 
 //Ruta para borrar un usuario
-router.delete('/:id', async (req, res, next)=>{
+router.delete('/:id',
+  validatorHandler(getUserDto, 'params'),
+  async (req, res, next)=>{
   const { id } = req.params;
   try {
     const delUser = await services.delete(id);
