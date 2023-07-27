@@ -1,6 +1,7 @@
 const express = require('express');
 const categoriesService = require('../services/categories_service');
-const { checkEmptyJSON } = require('../middlewares/error.handler')
+const validatorHandler = require('../middlewares/validator.handler');
+const { createCategoriaDto, getCategoriaDto, updateCategoriaDto } = require('../model/categoria_Dto')
 const router = express.Router();
 const service = new categoriesService();
 
@@ -15,7 +16,9 @@ router.get('/', async (req, res, next) => {
 });
 
 //Ruta para buscar las categorias por id
-router.get('/:categoriesId', async (req, res, next) => {
+router.get('/:categoriesId',
+validatorHandler(getCategoriaDto,'params'),
+async (req, res, next) => {
   const { categoriesId } = req.params;
   try {
     const categoria = await service.findOne(categoriesId);
@@ -26,7 +29,9 @@ router.get('/:categoriesId', async (req, res, next) => {
 });
 
 //Ruta Para traer las categorias con todos sus productos
-router.get('/:categoriesId/products', async (req, res, next) => {
+router.get('/:categoriesId/products',
+  validatorHandler(getCategoriaDto,'params'),
+  async (req, res, next) => {
   const { categoriesId, products } = req.params;
   try {
     const categoria = await service.addProductsToCategory(categoriesId, products);
@@ -37,7 +42,9 @@ router.get('/:categoriesId/products', async (req, res, next) => {
 });
 
 // Ruta para crear una nueva categoria
-router.post('/', checkEmptyJSON, async (req, res, next) => {
+router.post('/',
+  validatorHandler(createCategoriaDto,'body'),
+  async (req, res, next) => {
   const body = req.body;
   try {
     const categoria = await service.create(body);
@@ -48,7 +55,10 @@ router.post('/', checkEmptyJSON, async (req, res, next) => {
 });
 
 //Ruta para actualizar una categoria
-router.patch('/:categoriesId',checkEmptyJSON, async (req, res, next) => {
+router.patch('/:categoriesId',
+  validatorHandler(getCategoriaDto, 'params'),
+  validatorHandler(updateCategoriaDto,'body'),
+  async (req, res, next) => {
   const { categoriesId } = req.params;
   const body = req.body;
   try {
@@ -60,7 +70,9 @@ router.patch('/:categoriesId',checkEmptyJSON, async (req, res, next) => {
 });
 
 //Ruta oara borrar una categoria
-router.delete('/:categoriesId', async (req, res, next) => {
+router.delete('/:categoriesId',
+  validatorHandler(getCategoriaDto,'params'),
+  async (req, res, next) => {
   const { categoriesId } = req.params;
   try {
     const categoria = await service.delete(categoriesId);
