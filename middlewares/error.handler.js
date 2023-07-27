@@ -7,7 +7,7 @@ function logErrors(err, req, res, next) {
 };
 
 // Middleware para manejar errores Boom y enviar una respuesta JSON con el código de estado y cuerpo proporcionados por Boom
-function boomError(err, req, res, next) {
+function oomError(err, req, res, next) {
   if (err.isBoom) {
     const { output } = err;
     res.status(output.statusCode).json(output.payload);
