@@ -16,12 +16,12 @@ router.get('/', async (req, res, next) => {
 });
 
 //Ruta para buscar las categorias por id
-router.get('/:categoriesId',
+router.get('/:id',
 validatorHandler(getCategoriaDto,'params'),
 async (req, res, next) => {
-  const { categoriesId } = req.params;
+  const { id } = req.params;
   try {
-    const categoria = await service.findOne(categoriesId);
+    const categoria = await service.findOne(id);
     res.status(200).json(categoria);
   } catch (error) {
     next(error);
@@ -29,12 +29,12 @@ async (req, res, next) => {
 });
 
 //Ruta Para traer las categorias con todos sus productos
-router.get('/:categoriesId/products',
+router.get('/:id/products',
   validatorHandler(getCategoriaDto,'params'),
   async (req, res, next) => {
-  const { categoriesId, products } = req.params;
+  const { id, products } = req.params;
   try {
-    const categoria = await service.addProductsToCategory(categoriesId, products);
+    const categoria = await service.addProductsToCategory(id, products);
     res.status(200).json(categoria);
   } catch (error) {
     next(error);
@@ -55,14 +55,14 @@ router.post('/',
 });
 
 //Ruta para actualizar una categoria
-router.patch('/:categoriesId',
+router.patch('/:id',
   validatorHandler(getCategoriaDto, 'params'),
   validatorHandler(updateCategoriaDto,'body'),
   async (req, res, next) => {
-  const { categoriesId } = req.params;
+  const { id } = req.params;
   const body = req.body;
   try {
-    const categoria = await service.update(categoriesId, body);
+    const categoria = await service.update(id, body);
     res.json(categoria);
   } catch (error) {
     next(error);
@@ -70,12 +70,12 @@ router.patch('/:categoriesId',
 });
 
 //Ruta oara borrar una categoria
-router.delete('/:categoriesId',
+router.delete('/:id',
   validatorHandler(getCategoriaDto,'params'),
   async (req, res, next) => {
-  const { categoriesId } = req.params;
+  const { id } = req.params;
   try {
-    const categoria = await service.delete(categoriesId);
+    const categoria = await service.delete(id);
     res.json(categoria);
   } catch (error) {
     next(error);
