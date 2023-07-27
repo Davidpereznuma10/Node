@@ -1,7 +1,8 @@
 const express = require('express');
 const peopleService = require('../services/people_service');
-const { checkEmptyJSON } = require('../middlewares/error.handler')
 const router = express.Router();
+const validatorHandler = require('../middlewares/validator.handler');
+const { createPeopleDto, getPeopleDto, updatePeopleDto  } = require('../model/people_Dto');
 const service = new peopleService();
 
 //Ruta para traer todas las personas
@@ -15,7 +16,9 @@ try {
 });
 
 //Ruta para traer a personas por id
-router.get('/:id',async (req, res, next) => {
+router.get('/:id',
+  validatorHandler(getPeopleDto, 'params'),
+  async (req, res, next) => {
   const { id } = req.params;
   try {
   const people = await service.findOne(id);
@@ -26,7 +29,9 @@ router.get('/:id',async (req, res, next) => {
 });
 
 // Ruta para crear una nueva persona
-router.post('/',  checkEmptyJSON ,async(req, res, next)=>{
+router.post('/',
+  validatorHandler(createPeopleDto,'body'),
+  async(req, res, next)=>{
   const body = req.body;
 try {
   const newPeople = await service.create(body);
@@ -37,7 +42,10 @@ try {
 });
 
 //Ruta para actualizar a las personas
-router.patch('/:id', checkEmptyJSON, async (req, res, next)=>{
+router.patch('/:id',
+  validatorHandler(getPeopleDto, 'params'),
+  validatorHandler(updatePeopleDto, 'body'),
+  async (req, res, next)=>{
   const { id }= req.params;
   const body = req.body;
 try {
@@ -49,7 +57,9 @@ try {
 })
 
 //Ruta Para borrar a personas por id
-router.delete('/:id',async (req, res, next) => {
+router.delete('/:id',
+  validatorHandler(getPeopleDto, 'params'),
+  async (req, res, next) => {
   const { id } = req.params;
 try {
   const deletedPerson = await service.delete(id);
