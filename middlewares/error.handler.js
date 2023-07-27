@@ -23,12 +23,6 @@ function errorHanlder(err, req, res, next) {
   });
 };
 
-// Middleware para manejar el JSON vacío
-function checkEmptyJSON(req, res, next) {
-  if (Object.keys(req.body).length === 0) {
-    throw Boom.badRequest('El JSON enviado está vacío');
-  }
-  next();
-}
 
-module.exports = { logErrors, errorHanlder, boomError, checkEmptyJSON };
+
+module.exports = { logErrors, errorHanlder, boomError };
