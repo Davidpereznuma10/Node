@@ -6,10 +6,8 @@ const { logErrors, errorHanlder, boomError }=require('./middlewares/error.handle
 dotenv.config();
 const app = express();
 
-// Parsear el valor de la variable de entorno MY_CONFIG
-const config = JSON.parse(process.env.MY_CONFIG);
-const PORT = config.port || 3000;
-const hostname = config.hostname || 'localhost';
+const PORT = process.env.PORT || 3000;
+const hostname = process.env.DB_HOST || 'localhost';
 
 //Middleware que se utiliza para analizar el cuerpo de las solicitudes entrantes en formato JSON
 app.use(express.json());
@@ -23,6 +21,6 @@ app.use(boomError)
 app.use(errorHanlder)
 
 //Puerto que usamos he imprimimos
-app.listen(PORT,hostname, () => {
+app.listen(PORT, hostname, () => {
     console.log(`Servidor escuchando en http://${hostname}:${PORT}`);
-})
+});
