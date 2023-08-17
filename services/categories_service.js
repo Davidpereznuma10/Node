@@ -1,21 +1,10 @@
-const { faker } = require('@faker-js/faker');
 const Boom = require('@hapi/boom');
+const { pool } = require('../libs/postgres');
 
 class categoriesService {
   constructor() {
     this.categories = [];
-    this.generate();
-  };
-
-  generate() {
-    const limit = 10;
-    for (let i = 0; i < limit; i++) {
-      this.categories.push({
-        id: faker.string.uuid(),
-        categorias: faker.color.rgb(),
-        isBlock: faker.datatype.boolean(),
-      });
-    };
+    this.pool = pool;
   };
 
   async create(data) {
@@ -24,21 +13,24 @@ class categoriesService {
       throw Boom.badRequest('Faltan datos obligatorios para crear la categoría');
     };
     const categoria = {
-      id: faker.datatype.uuid(),
       categorias,
-      isBlock: faker.datatype.boolean(),
     };
     this.categories.push(categoria);
     return categoria;
   };
 
-
   async find() {
-    const categoria = this.categories;
-    if (!categoria) {
-      throw Boom.notFound('Categoría no encontrada');
-    };
-    return categoria;
+  try {
+    const query = 'SELECT * FROM categories';
+    const rta = await this.pool.query(query);
+    if (rta.rows.length === 0) {
+      throw Boom.notFound('Categorías no encontradas');
+    }
+    return rta.rows;
+  } catch (error) {
+      console.error('Error al obtener categorías:', error);
+      throw Boom.badImplementation('Error interno del servidor');
+    }
   };
 
   async findOne(id) {
@@ -51,7 +43,6 @@ class categoriesService {
     };
     return categoria;
   };
-
 
   async addProductsToCategory(id, products) {
     const index = this.categories.findIndex((e) => e.id === id);

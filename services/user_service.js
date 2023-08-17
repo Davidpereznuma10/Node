@@ -1,47 +1,37 @@
-const { faker } = require("@faker-js/faker");
 const Boom = require("@hapi/boom");
+const { pool } = require('../libs/postgres')
 
 class userService{
 constructor(){
   this.users = [];
-  this.generate();
+  this.pool = pool;
 };
-
-  generate(){
-    const limit = 100;
-    for (let i = 0; i < limit; i++) {
-      this.users.push({
-        id: faker.string.uuid(),
-        name: faker.person.fullName(),
-        gender: faker.person.gender(),
-        edad: faker.number.int({ min: 18, max: 80 }),
-        isBlock: faker.datatype.boolean(),
-      });
-    };
-  };
-
   async create(data){
     const { name, gender, edad } = data;
     if (!name || !gender || !edad) {
       throw Boom.badRequest('Faltan datos obligatorios para crear el producto');
     };
     const user ={
-      id: faker.string.uuid(),
       name,
       gender,
       edad,
-      isBlock: faker.datatype.boolean(),
     };
     this.users.push(user);
     return user;
   };
 
   async find(){
-    const user = this.users;
-    if (!user) {
-      throw Boom.notFound("User not found");
-    };
-    return user;
+    try {
+      const query = 'SELECT * FROM users';
+      const rta = await this.pool.query(query);
+      if (rta.rows.length === 0) {
+        throw Boom.badRequest('Usuarios no encontrados')
+      }
+      return rta.rows;
+    } catch (error) {
+      console.error('Erro al optener los usuarios', error);
+      throw Boom.badImplementation('Error interno del servidor');
+    }
   };
 
   async finOne(id){

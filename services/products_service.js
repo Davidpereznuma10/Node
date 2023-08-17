@@ -1,24 +1,11 @@
-const { faker } = require('@faker-js/faker');
 const Boom = require('@hapi/boom');
+const { pool } = require('../libs/postgres')
 
 class ProductsService {
 
   constructor(){
     this.products = [];
-    this.generate();
-  };
-
-  generate() {
-    const limit = 100;
-    for (let index = 0; index < limit; index++) {
-      this.products.push({
-        id: faker.string.uuid(),
-        name: faker.commerce.productName(),
-        price: parseInt(faker.commerce.price(), 10),
-        image: faker.image.url(),
-        isBlock: faker.datatype.boolean(),
-      });
-    };
+    this.pool = pool;
   };
 
   async create(data) {
@@ -27,22 +14,26 @@ class ProductsService {
       throw Boom.badRequest('Faltan datos obligatorios para crear el producto');
     };
     const product = {
-      id: faker.string.uuid(),
       name,
       price,
       image,
-      isBlock: faker.datatype.boolean(),
     };
     this.products.push(product);
     return product;
   };
 
   async find() {
-    const product = this.products;
-    if (!product) {
-      throw Boom.notFound("Product not found");
-    };
-    return product;
+  try {
+    const query = 'SELECT * FROM products';
+    const rta = await this.pool.query(query);
+    if (rta.rows.length === 0) {
+      throw Boom.notFound('Productos no encontrados')
+    }
+    return rta.rows;
+  } catch (error) {
+    console.error('Error al optener los productos', error);
+    throw Boom.badImplementation('Error interno del servidor');
+  }
   };
 
   async findOne(id) {

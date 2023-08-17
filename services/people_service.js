@@ -1,49 +1,37 @@
-const { faker } = require('@faker-js/faker');
 const Boom = require('@hapi/boom');
+const { pool } = require('../libs/postgres');
 
 class peopleService{
 constructor(){
   this.peoples=[];
-  this.generate();
+  this.pool = pool;
 };
-
-  generate(){
-    const limit = 20;
-    for (let i = 0; i < limit; i++) {
-      this.peoples.push({
-        id: faker.string.uuid(),
-        name: faker.person.firstName(),
-        zodiaco: faker.person.zodiacSign(),
-        edad: faker.number.int({min:18 ,max: 80}),
-        isBlock: faker.datatype.boolean(),
-      });
-    };
-  };
-
-
   async create(data){
     const { name, zodiaco, edad } =data;
     if (!name || !zodiaco || !edad) {
       throw Boom.badRequest('Faltan datos obligatorios para crear la persona');
     };
     const people = {
-      id: faker.string.uuid(),
       name,
       zodiaco,
       edad,
-      isBlock: faker.datatype.boolean(),
     };
     this.peoples.push(people);
     return people;
   }
 
   async find(){
-    const people = this.peoples
-    if (!people) {
-      throw Boom.notFound('La persona no existe');
-    };
-    return people;
-  };
+  try {
+    const query = 'SELECT * FROM people';
+    const rta = await this.pool.query(query);
+    if (rta.rows.length === 0) {
+      throw Boom.notFound('Personas no encontrada')
+    }
+    return rta;
+  } catch (error) {
+    console.error('Error al obtener las personas', error);
+    throw Boom.badImplementation('Error interno del servidor')
+  }};
 
   async findOne(id){
     const people = this.peoples.find((item)=> item.id === id);
