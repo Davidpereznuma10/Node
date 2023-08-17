@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-const id = Joi.string().uuid();
+const id = Joi.string().id();
 const name = Joi.string();
 const zodiaco = Joi.string();
 const edad = Joi.number().min(18);

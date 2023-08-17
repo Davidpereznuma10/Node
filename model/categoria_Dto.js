@@ -11,7 +11,7 @@ function validateColor(value, helpers) {
 }
 
 
-const id = Joi.string().uuid();
+const id = Joi.string().id();
 const categorias = Joi.string().custom(validateColor, 'Color validation');
 
 const createCategoriaDto = Joi.object({
