@@ -1,10 +1,9 @@
 const Boom = require("@hapi/boom");
-const { pool } = require('../libs/postgres')
+const { sequelize } = require('../libs/sequelize')
 
 class userService{
 constructor(){
   this.users = [];
-  this.pool = pool;
 };
   async create(data){
     const { name, gender, edad } = data;
@@ -23,11 +22,11 @@ constructor(){
   async find(){
     try {
       const query = 'SELECT * FROM users';
-      const rta = await this.pool.query(query);
-      if (rta.rows.length === 0) {
+      const [ data ] = await sequelize.query(query);
+      if (data.length === 0) {
         throw Boom.badRequest('Usuarios no encontrados')
       }
-      return rta.rows;
+      return data;
     } catch (error) {
       console.error('Erro al optener los usuarios', error);
       throw Boom.badImplementation('Error interno del servidor');

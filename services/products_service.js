@@ -1,11 +1,10 @@
 const Boom = require('@hapi/boom');
-const { pool } = require('../libs/postgres')
+const { sequelize } = require('../libs/sequelize')
 
 class ProductsService {
 
   constructor(){
     this.products = [];
-    this.pool = pool;
   };
 
   async create(data) {
@@ -25,11 +24,11 @@ class ProductsService {
   async find() {
   try {
     const query = 'SELECT * FROM products';
-    const rta = await this.pool.query(query);
-    if (rta.rows.length === 0) {
+    const [ data ]  = await sequelize.query(query);
+    if (data.length === 0) {
       throw Boom.notFound('Productos no encontrados')
     }
-    return rta.rows;
+    return data;
   } catch (error) {
     console.error('Error al optener los productos', error);
     throw Boom.badImplementation('Error interno del servidor');
