@@ -4,10 +4,9 @@ const PRODUCTS_TABLE = 'products';
 
 const ProductsSchema ={
     id:{
-        allowNull: false,
+        type: DataTypes.INTEGER,
         autoIncrement: true,
-        primaryKey: true,
-        type: DataTypes.INTEGER
+        primaryKey: true
     },
     productName:{
         allowNull: false,

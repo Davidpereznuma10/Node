@@ -2,7 +2,7 @@ const { Model, DataTypes, Sequelize } = require('sequelize');
 
 const PEDIDOS_TABLE = 'pedidos';
 
-const pediosSchema = {
+const pedidosSchema = {
     id:{
         allowNull: false,
         autoIncrement:true,
@@ -26,7 +26,7 @@ const pediosSchema = {
     },
     createAt:{
         allowNull:false,
-        type:DataTypes.STRING,
+        type:DataTypes.DATE,
         defaultValue:Sequelize.NOW,
         field:'create_at'
     }
@@ -46,4 +46,4 @@ class Pedido extends Model{
     }
 }
 
-module.exports = { PEDIDOS_TABLE, pediosSchema, Pedido }
+module.exports = { PEDIDOS_TABLE, pedidosSchema, Pedido }
