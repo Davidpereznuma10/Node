@@ -1,79 +1,74 @@
 const Boom = require('@hapi/boom');
-const { sequelize } = require('../libs/sequelize');
-
+const { models } = require('./../libs/sequelize');
+const { number } = require('joi');
+const People = models.People;
 class peopleService{
 constructor(){
-  this.peoples=[];
 };
   async create(data){
-    const { name, zodiaco, edad } =data;
-    if (!name || !zodiaco || !edad) {
-      throw Boom.badRequest('Faltan datos obligatorios para crear la persona');
+    try {
+      const { name, lastname, email, number } = data;
+      if (!name || !lastname || !email || !number) {
+        throw Boom.badRequest('Faltan datos obligatorios para crear la persona');
+      };
+      const createPeople = await People.create({ name, lastname, email, number })
+      return createPeople;
+    } catch (error) {
+      console.error('Erro al crear a la persona', error);
+      throw Boom.badImplementation('Error interno al intentar crear a la persona');
     };
-    const people = {
-      name,
-      zodiaco,
-      edad,
-    };
-    this.peoples.push(people);
-    return people;
-  }
+  };
 
   async find(){
-  try {
-    const query = 'SELECT * FROM people';
-    const [ data ] = await sequelize.query(query);
-    if (sequelize.length === 0) {
-      throw Boom.notFound('Personas no encontrada')
+    try {
+      const people = await People.findAll();
+      if (people.length === 0) {
+        throw Boom.notFound('Personas no encontrada')
+      }
+      return people;
+    } catch (error) {
+      console.error('Error al obtener las personas', error);
+      throw Boom.badImplementation('Error interno del servidor')
     }
-    return data;
-  } catch (error) {
-    console.error('Error al obtener las personas', error);
-    throw Boom.badImplementation('Error interno del servidor')
-  }};
+  };
 
   async findOne(id){
-    const people = this.peoples.find((item)=> item.id === id);
-    if (!people) {
-      throw Boom.notFound('La persona no existe');
+    try {
+      const people = await People.findByPk(id);
+      if (people.length === 0) {
+        throw Boom.notFound('La persona no encontrada');
+      };
+      return people;
+    } catch (error) {
+        console.error('Error al optener la persona', error);
+        throw Boom.badImplementation('Error interno del servidor');
     };
-    if (people.isBlock) {
-      throw Boom.conflict('People is blocked');
-    };
-    return people;
   };
 
   async update(id, changes){
-    const index = this.peoples.findIndex((item)=> item.id === id);
-    if (index === -1) {
-      throw Boom.notFound('La persona no existe');
-    };
-    const people = this.peoples[index];
-    if (people.isBlock) {
-      throw Boom.conflict('People is blocked');
-    };
-    const { name, zodiaco, edad} = changes;
-    if (!name && !zodiaco && !edad) {
-      throw Boom.badRequest('No se proporcionaron datos para actualizar a la persona')
+    try {
+      const people = await this.findOne(id);
+      const { name, lastname, email, number } = changes;
+      if (!name && !lastname && !email && !number) {
+        throw Boom.badRequest('No se proporcionaron datos para actualizar a la persona')
+      }
+      const updatePeople = await people.update(changes);
+      return updatePeople;
+    } catch (error) {
+        console.error('Error al actualizar la  persona:', error);
+        throw Boom.badImplementation('Error interno al intentar actualizar la persona');
     }
-    this.peoples[index]={
-      ...people,
-      ...changes,
-    };
-    return this.peoples[index];
   }
 
   async delete(id){
-    const index = this.peoples.findIndex((item) => item.id === id);
-    if (index === -1) {
-      throw Boom.notFound('La persona no existe');
+    try {
+      const people = await this.findOne(id)
+      await people.destroy();
+      return { message: `Se borró la persona con la id: ${id}`, deletedProductId: id };
+    } catch (error) {
+      console.error('Error al eliminar la persona:', error);
+      throw Boom.badImplementation('Error interno al intentar eliminar la persona');
     };
-    const people = this.peoples[index];
-    if (people.isBlock) {
-      throw Boom.conflict('People is block');
-    };
-    this.peoples.splice(index, 1);
-    return { id };
   };
 };
 

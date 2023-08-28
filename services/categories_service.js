@@ -1,92 +1,83 @@
 const Boom = require('@hapi/boom');
-const { sequelize } = require('../libs/sequelize');
+const { models } = require('../libs/sequelize');
+const Category = models.Category;
 
 class categoriesService {
-  constructor() {
-    this.categories = [];
-  };
 
   async create(data) {
-    const { categorias } = data;
-    if (!categorias) {
-      throw Boom.badRequest('Faltan datos obligatorios para crear la categoría');
-    };
-    const categoria = {
-      categorias,
-    };
-    this.categories.push(categoria);
-    return categoria;
+    try {
+      const { categoryName, description } = data;
+      if (!categoryName || !description) {
+        throw Boom.badRequest('Faltan datos obligatorios para crear la categoría');
+      };
+      const createCategory = await Category.create({ categoryName, description })
+      return createCategory;
+    } catch (error) {
+        console.error('Error al crear el pedido: ', error);
+        throw Boom.badImplementation('Error interno en el servidor');
+    }
   };
 
   async find() {
   try {
-    const query = 'SELECT * FROM categories';
-    const [ data ] = await sequelize.query(query);
-    if (data.length === 0) {
+    const category = await Category.findAll();
+    if (category.length === 0) {
       throw Boom.notFound('Categorías no encontradas');
     }
-    return data;
+    return category;
   } catch (error) {
-      console.error('Error al obtener categorías:', error);
+      console.error('Error al obtener las categorías:', error);
       throw Boom.badImplementation('Error interno del servidor');
     }
   };
 
   async findOne(id) {
-    const categoria = this.categories.find((e) => e.id === id);
-    if (!categoria) {
-      throw new Error('Categoría no encontrada');
-    };
-    if(categoria.isBlock){
-      throw Boom.conflict('Category is blocked');
-    };
-    return categoria;
+    try {
+      const category = await Category.findByPk(id)
+      if (category.length === 0) {
+        throw Boom.notFound('Categoría no encontrada');
+      }
+      return category;
+    } catch (error) {
+      console.error('Error al optener la categoria', error);
+      throw Boom.badImplementation('Error interno en el servidor');
+    }
   };
 
-  async addProductsToCategory(id, products) {
-    const index = this.categories.findIndex((e) => e.id === id);
-    if (index === -1) {
-      throw Boom.notFound('category not found');
-    };
-    const categoria = this.categories[index];
-    if (categoria.isBlock) {
-      throw Boom.conflict('Category is blocked');
-    };
-    categoria.products = products;
-    return categoria;
-  };
+  // async addProductsToCategory(id, products) {
+  //   const index = this.categories.findIndex((e) => e.id === id);
+  //   if (index === -1) {
+  //     throw Boom.notFound('category not found');
+  //   };
+  //   const categoria = this.categories[index];
+  //   categoria.products = products;
+  //   return categoria;
+  // };
 
   async update(id, changes) {
-    const index = this.categories.findIndex((e) => e.id === id);
-    if (index === -1) {
-      throw new Error('Categoría no encontrada');
-    };
-    const categoria = this.categories[index];
-    if (categoria.isBlock) {
-      throw Boom.conflict('Category is blocked');
-    };
-    const { categorias } = changes;
-    if (!categorias) {
-      throw Boom.badRequest('No se proporcionaron datos para actualizar la categoría');
+    try {
+      const category =await this.findOne(id);
+      const { categoryName, description} = changes
+      if ( !categoryName && !description ) {
+        throw Boom.badImplementation('no se proporcionan datos para actualizar la categoria')
+      }
+      const updateCategory = await category.update(changes)
+      return updateCategory;
+    } catch (error) {
+        console.error('Error al actualizar la categoria:', error);
+        throw Boom.badImplementation('Error interno en el servidor');
     }
-    this.categories[index] = {
-      ...categoria,
-      ...changes,
-    };
-    return this.categories[index];
   };
 
   async delete(id) {
-    const index = this.categories.findIndex((e) => e.id === id);
-    if (index === -1) {
-      throw new Error('Categoría no encontrada');
-    };
-    const categoria = this.categories[index];
-    if (categoria.isBlock) {
-      throw Boom.conflict('Category is blocked');
-    };
-    this.categories.splice(index, 1);
-    return { id };
+    try {
+      const category = await this.findOne(id);
+      await category.destroy();
+      return { message: `Se borró la categoria con la id: ${id}`, deletedProductId: id  }
+    } catch (error) {
+        console.error('Error al eliminar la categoria:', error);
+        throw Boom.badImplementation('Error interno en el servidor');
+    }
   };
 };
 

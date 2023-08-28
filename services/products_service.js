@@ -1,82 +1,72 @@
 const Boom = require('@hapi/boom');
-const { sequelize } = require('../libs/sequelize')
-
+const { models } = require('../libs/sequelize');
+const Product = models.Product;
 class ProductsService {
 
-  constructor(){
-    this.products = [];
-  };
-
   async create(data) {
-    const { name, price, image } = data;
-    if (!name || !price || !image) {
-      throw Boom.badRequest('Faltan datos obligatorios para crear el producto');
-    };
-    const product = {
-      name,
-      price,
-      image,
-    };
-    this.products.push(product);
-    return product;
+    try {
+      const { productName, price, description, stock } = data;
+      if (!productName || !price || !description || !stock) {
+        throw Boom.badRequest('Faltan datos obligatorios para crear el producto');
+      };
+      const createdProduct = await Product.create({ productName, price, description, stock });
+      return createdProduct;
+    } catch (error) {
+      console.error('Error al crear el producto:', error);
+      throw Boom.badImplementation('Error interno al intentar crear el producto');
+    }
   };
 
   async find() {
-  try {
-    const query = 'SELECT * FROM products';
-    const [ data ]  = await sequelize.query(query);
-    if (data.length === 0) {
-      throw Boom.notFound('Productos no encontrados')
+    try {
+      const product = await Product.findAll()
+      if (product.length === 0) {
+        throw Boom.notFound('No hay productos')
+      }
+      return product;
+    } catch (error) {
+        console.error('Error al optener los productos', error);
+        throw Boom.badImplementation('Error interno del servidor');
     }
-    return data;
-  } catch (error) {
-    console.error('Error al optener los productos', error);
-    throw Boom.badImplementation('Error interno del servidor');
-  }
   };
 
   async findOne(id) {
-    const product = this.products.find(item => item.id === id);
-    if (!product) {
-      throw Boom.notFound('Product not found');
-    };
-    if (product.isBlock) {
-      throw Boom.conflict('Product is blocked');
-    };
-    return product;
+    try  {
+      const product = await Product.findByPk(id)
+      if (product.length === 0) {
+        throw Boom.notFound('Producto no encontrado');
+      };
+      return product;
+    } catch (error) {
+        console.error('Error al obtener el producto:', error);
+        throw Boom.badImplementation('Error interno al obtener el producto');
+    }
   };
 
   async update(id, changes) {
-    const index = this.products.findIndex(item => item.id === id);
-    if (index === -1) {
-      throw Boom.notFound("Product not found");
+    try {
+      const product = await this.findOne(id);
+      const { productName, price, description, stock } = changes;
+      if (!productName && !price && !description && !stock)   {
+        throw Boom.badRequest('No se proporcionaron datos para actualizar el prodcuto');
+      };
+      const updateProduct = await product.update(changes);
+      return updateProduct;
+    } catch (error) {
+        console.error('Error al actualizar producto:', error);
+        throw Boom.badImplementation('Error interno al intentar actualizar el producto');
     };
-    const product = this.products[index];
-    if (product.isBlock) {
-      throw Boom.conflict('Product is blocked');
-    };
-    const { name, price, image } = changes;
-    if (!name && !price && !image) {
-      throw Boom.badRequest('No se proporcionaron datos para actualizar el prodcuto');
-    }
-    this.products[index] = {
-      ...product,
-      ...changes
-    };
-    return this.products[index];
-  }
+  };
 
   async delete(id) {
-    const index = this.products.findIndex(item => item.id === id);
-    if (index === -1) {
-      throw Boom.notFound("Product not found");
+    try {
+      const product = await this.findOne(id)
+      await product.destroy();
+      return { message: `Se borró el producto con la id: ${id}`, deletedProductId: id }
+    } catch (error) {
+      console.error('Error al eliminar el producto:', error);
+      throw Boom.badImplementation('Error interno al intentar eliminar el producto');
     };
-    const product = this.products[index];
-    if (product.isBlock) {
-      throw Boom.conflict('Product is blocked');
-    };
-    this.products.splice(index, 1);
-    return { id };
   };
 };
 
