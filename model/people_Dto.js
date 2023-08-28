@@ -2,13 +2,16 @@ const Joi = require("joi");
 
 const id = Joi.string().id();
 const name = Joi.string();
-const zodiaco = Joi.string();
-const edad = Joi.number().min(18);
+const lastname = Joi.string();
+const email = Joi.string().email();
+const number = Joi.number();
+
 
 const createPeopleDto= Joi.object({
   name : name.required(),
-  zodiaco: zodiaco.required(),
-  edad: edad.required(),
+  lastname: lastname.required(),
+  email: email.required(),
+  number : number.required()
 });
 
 const getPeopleDto=Joi.object({
@@ -17,8 +20,9 @@ const getPeopleDto=Joi.object({
 
 const updatePeopleDto=Joi.object({
   name : name,
-  zodiaco: zodiaco,
-  edad: edad,
+  lastname: lastname,
+  email: email,
+  number: number
 });
 
 

@@ -1,20 +1,23 @@
 const Joi = require('joi');
 
 const id = Joi.string().id();
-const name = Joi.string().min(3).max(15);
-const price = Joi.number().integer().min(10);
-const image = Joi.string().uri();
+const productName = Joi.string();
+const price = Joi.number();
+const stock = Joi.number();
+const description = Joi.string();
 
 const createProductDto = Joi.object({
-  name: name.required(),
+  productName: productName.required(),
+  description: description.required(),
   price: price.required(),
-  image: image.required()
+  stock: stock.required()
 });
 
 const updateProductDto = Joi.object({
-  name: name,
+  productName: productName,
+  description, description,
   price: price,
-  image: image
+  stock: stock
 });
 
 const getProductDto = Joi.object({
