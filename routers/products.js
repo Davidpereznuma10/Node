@@ -7,12 +7,12 @@ const service = new ProductsService();
 
 //Ruta para traer todas las productos
 router.get('/', async(req, res, next) => {
-try {
-  const products = await service.find();
-  res.status(200).json(products);
-} catch (error) {
-  next(error);
-};
+  try {
+    const products = await service.find();
+    res.status(200).json(products);
+  } catch (error) {
+    next(error);
+  };
 });
 
 //Ruta para traer a productos por id

@@ -1,5 +1,5 @@
 const express = require("express");
-const userService = require("../services/user_service");
+const userService  = require("../services/user_service");
 const validatorHandler = require('../middlewares/validator.handler');
 const { createUserDto, updateUserDto, getUserDto } = require('../model/user_Dto');
 const services = new userService()
@@ -8,8 +8,8 @@ const router = express.Router();
 //Ruta para traer a toods los usarios
 router.get('/', async (req, res, next)=>{
   try {
-    const user = await services.find();
-    res.json(user);
+      const user = await services.find();
+      res.json(user);
   } catch (error) {
     next(error);
   }
@@ -21,7 +21,7 @@ router.get('/:id',
   async (req, res, next)=>{
   const { id } = req.params;
   try {
-    const user = await services.finOne(id);
+    const user = await services.findOne(id);
     res.status(200).json(user);
   } catch (error) {
     next(error);
